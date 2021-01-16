@@ -11,92 +11,113 @@ namespace Server
 {
     public class ServerController
     {
-        public List<Player> players;
+        private List<Player> _playerList;
+
         public ServerController()
         {
-            players = new List<Player>();
+            _playerList = new List<Player>();
         }
 
         public void StartServer()
         {
-            TcpListener tcpListener = new TcpListener(
-                IPAddress.Parse("127.0.01"), 7777);
+            TcpListener tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 7777);
             tcpListener.Start();
-            Console.WriteLine("Started");
+            Console.WriteLine("Server started");
 
             while(true)
             {
                 if (tcpListener.Pending())
                 {
-                    Console.WriteLine("Pending connection");
-                    tcpListener.BeginAcceptTcpClient(AcceptPlayer, tcpListener);
+                    Console.WriteLine("New pending connection");
+                    tcpListener.BeginAcceptTcpClient(AcceptTcpClient, tcpListener);
                 }
 
-                foreach (var player in players)
+                foreach (Player player in _playerList)
                 {
-                    switch (player.GameState)
+                    switch(player.GameState)
                     {
                         case GameState.Connecting:
-                            Connecting(player);
+                            if (player.DataAvailable())
+                            {
+                                Console.WriteLine("New player registering");
+                                string playerJson = player.BinaryReader.ReadString();
+                                Player playerMsg = JsonConvert.DeserializeObject<Player>(playerJson);
+                                player.Name = playerMsg.Name;
+
+                                foreach (Player notifyPlayer in _playerList)
+                                {
+                                    Message msg = new Message();
+                                    msg.MessageType = MessageType.NewPlayer;
+                                    msg.Description = (notifyPlayer == player) ? 
+                                        "Successfully joined" : 
+                                        "Player " + player.Name + " has joined";
+                                    PlayerInfo playerInfo = new PlayerInfo();
+                                    playerInfo.Id = player.Id;
+                                    playerInfo.Name = player.Name;
+                                    playerInfo.X = 0;
+                                    playerInfo.Y = 0;
+                                    playerInfo.Z = 0;
+                                    msg.PlayerInfo = playerInfo;
+
+                                    string msgJson = JsonConvert.SerializeObject(msg);
+                                    notifyPlayer.BinaryWriter.Write(msgJson);
+                                    notifyPlayer.MessageList.Add(msg);
+                                    Console.WriteLine(msgJson);
+                                }
+                                player.GameState = GameState.Sync;
+                            }
                             break;
                         case GameState.Sync:
-                            Sync(player);
+                            Console.WriteLine("New player sync");
+                            // processar todos os NewPlayer
+                            SyncNewPlayers(player);
+                            // processar todos os PlayerMovement
+                            SyncPlayerMovement(player);
+
+                            Message messagePlayer = new Message();
+                            messagePlayer.MessageType = MessageType.FinishedSync;
+                            string msgPlayerJson = JsonConvert.SerializeObject(messagePlayer);
+                            player.BinaryWriter.Write(msgPlayerJson);
+                            player.GameState = GameState.GameStarted;
                             break;
                         case GameState.GameStarted:
-                            GameStarted(player);
+                            if (player.DataAvailable())
+                            {
+                                Console.WriteLine("New player position");
+                                string msgJson = player.BinaryReader.ReadString();
+                                Console.WriteLine(msgJson);
+                                Message message = JsonConvert.DeserializeObject<Message>(msgJson);
+                                if (message.MessageType == MessageType.PlayerMovement)
+                                {
+                                    foreach (Player p in _playerList)
+                                    {
+                                        if (p.GameState == GameState.GameStarted)
+                                        {
+                                            p.BinaryWriter.Write(msgJson);
+                                        }
+                                    }
+                                }
+                            }
                             break;
                     }
                 }
             }
-        }
-
-        private void GameStarted(Player player)
-        {
-            if (player.DataAvailable())
-            {
-                Console.WriteLine("New player position ");
-                Message message = player.ReadMessage();
-                if (message.MessageType == MessageType.PlayerMovement)
-                {
-                    //players.Where(s => s.GameState == GameState.GameStarted).
-                    //    ToList().ForEach(p => p.SendMessage(message));
-                    foreach (var p in players)
-                    {
-                        if (p.GameState == GameState.GameStarted)
-                        {
-                            p.SendMessage(message);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void Sync(Player player)
-        {
-            // 1. processar todos os NeWPlayer
-            SyncNewPlayers(player);
-            // 2. processar todos os PlayerMovement
-            SyncPlayerMovement(player);
-
-            // 3. enviar mensagem ao servidor com FinishedSync
-            Message msg = new Message();
-            msg.MessageType = MessageType.FinishedSync;
-            player.SendMessage(msg);
-            player.GameState = GameState.GameStarted;
         }
 
         private void SyncPlayerMovement(Player player)
         {
-            foreach (Player p in players)
+            foreach (Player p in _playerList)
             {
                 if (p.GameState == GameState.GameStarted)
                 {
-                    var last = p.Messages.LastOrDefault(mt => mt.MessageType == MessageType.PlayerMovement);
+                    var last = p.MessageList.LastOrDefault(
+                            m => m.MessageType == MessageType.PlayerMovement);
                     if (last != null)
                     {
-                        Message m = new Message();
-                        m.PlayerInfo = last.PlayerInfo;
-                        player.SendMessage(m);
+                        Message msg = new Message();
+                        msg.PlayerInfo = last.PlayerInfo;
+                        string jsonMsg = JsonConvert.SerializeObject(msg);
+                        player.BinaryWriter.Write(jsonMsg);
                     }
                 }
             }
@@ -104,69 +125,48 @@ namespace Server
 
         private void SyncNewPlayers(Player player)
         {
-            foreach (var p in players)
+            foreach (Player p in _playerList)
             {
                 if (p.GameState == GameState.GameStarted)
                 {
-                    Message m = new Message();
-                    m.MessageType = MessageType.NewPlayer;
-                    PlayerInfo info = p.Messages.FirstOrDefault(mt => mt.MessageType == MessageType.NewPlayer).PlayerInfo;
-                    m.PlayerInfo = info;
+                    Message msg = new Message();
+                    msg.MessageType = MessageType.NewPlayer;
+                    PlayerInfo info = p.MessageList.FirstOrDefault(m =>
+                                                m.MessageType == MessageType.NewPlayer).PlayerInfo;
+                    msg.PlayerInfo = info;
 
-                    player.SendMessage(m);
+                    string jsonMsg = JsonConvert.SerializeObject(msg);
+                    player.BinaryWriter.Write(jsonMsg);
                 }
             }
         }
 
-        // envia msg ao cliente (unity) a informar da ligação ao servidor e posicao inicial
-        private void Connecting(Player player)
+        private void AcceptTcpClient(IAsyncResult ar)
         {
-            if (player.DataAvailable())
+            TcpListener tcpListener = (TcpListener)ar.AsyncState;
+            TcpClient tcpClient = tcpListener.EndAcceptTcpClient(ar);
+            if (tcpClient.Connected)
             {
-                Console.WriteLine("New player registering");
-                Player msg = player.ReadPlayer();
-                player.Name = msg.Name;
+                Console.WriteLine("Accepted new connection");
 
-                // comunica aos outros players novo jogador
-                foreach (var p in players)
-                {
-                    Message message = new Message();
-                    message.MessageType = MessageType.NewPlayer;
-                    message.Description = (p == player) ?
-                        "Successfully joined" :
-                        $"Player {player.Name} has joined";
-                    PlayerInfo info = new PlayerInfo();
-                    info.Id = player.Id;
-                    info.Name = player.Name;
-                    info.X = 0;
-                    info.Y = 0;
-                    info.Z = 0;
-                    message.PlayerInfo = info;
+                Player player = new Player();
+                Message message = new Message();
+                message.Description = "Hello new player";
+                message.MessageType = MessageType.Information;
 
-                    p.SendMessage(message);
-                    p.Messages.Add(message);
-                }
+                player.MessageList = new List<Message>();
+                player.MessageList.Add(message);
+                player.TcpClient = tcpClient;
+                player.BinaryReader = new System.IO.BinaryReader(tcpClient.GetStream());
+                player.BinaryWriter = new System.IO.BinaryWriter(tcpClient.GetStream());
+                player.Id = Guid.NewGuid();
+                player.GameState = GameState.Connecting;
 
-                player.GameState = GameState.Sync;
-            }
-        }
+                _playerList.Add(player);
 
-        private void AcceptPlayer(IAsyncResult result)
-        {
-            TcpListener tcpListener = (TcpListener)result.AsyncState;
-            TcpClient client = tcpListener.EndAcceptTcpClient(result);
-
-            if(client.Connected)
-            {
-                Console.WriteLine("Accepted new player");
-                Player p = new Player();
-                p.Messages = new List<Message>();
-                p.Id = new Guid();
-                p.GameState = GameState.Connecting;
-                p.TcpClient = client;
-                players.Add(p);
-
-                p.SendPlayer(p);
+                string playerJson = JsonConvert.SerializeObject(player);
+                Console.WriteLine(playerJson);
+                player.BinaryWriter.Write(playerJson);
             }
             else
             {

@@ -6,9 +6,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 
-
-
-
 namespace Common
 {
     public class Player
@@ -22,6 +19,7 @@ namespace Common
 
         private BinaryWriter _writer;
         private BinaryReader _reader;
+
         public void SendMessage(Message msg)
         {
             if (_writer == null)

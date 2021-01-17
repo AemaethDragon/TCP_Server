@@ -161,7 +161,7 @@ namespace Server
                 Console.WriteLine("Accepted new player");
                 Player p = new Player();
                 p.Messages = new List<Message>();
-                p.Id = new Guid();
+                p.Id = Guid.NewGuid();
                 p.GameState = GameState.Connecting;
                 p.TcpClient = client;
                 players.Add(p);

@@ -18,8 +18,15 @@ namespace Common
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
+        public float XQ { get; set; }
+        public float YQ { get; set; }
+        public float ZQ { get; set; }
+        public  float WQ { get; set; }
+
+
         public Guid Id { get; set; }
         public string Name { get; set; }
+
     }
 
     public enum MessageType

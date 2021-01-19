@@ -1,5 +1,5 @@
 ﻿using Common;
-using Newtonsoft.Json;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -141,6 +141,10 @@ namespace Server
                     info.X = 0;
                     info.Y = 0;
                     info.Z = 0;
+                    info.XQ = 0;
+                    info.YQ = 0;
+                    info.ZQ = 0;
+                    info.WQ = 0;
                     message.PlayerInfo = info;
 
                     p.SendMessage(message);

@@ -27,16 +27,10 @@ namespace Common
         #region portalPositions
         public float P1x { get; set; }
         public float P2x { get; set; }
-        public float P3x { get; set; }
-        public float P4x { get; set; }
         public float P1y { get; set; }
         public float P2y { get; set; }
-        public float P3y { get; set; }
-        public float P4y { get; set; }
         public float P1z { get; set; }
         public float P2z { get; set; } 
-        public float P3z { get; set; }  
-        public float P4z { get; set; }
         #endregion
         public float lookX { get; set; }
         public float lookY { get; set; }

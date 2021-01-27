@@ -148,6 +148,14 @@ namespace Server
                     info.C1x = 0;
                     info.C1y = 0;
                     info.C1z = 0;
+
+                    info.P1x = 0;
+                    info.P1y = 0;
+                    info.P1z = 0;
+
+                    info.P2x = 0;
+                    info.P2y = 0;
+                    info.P2z = 0;
                    
                     message.PlayerInfo = info;
 

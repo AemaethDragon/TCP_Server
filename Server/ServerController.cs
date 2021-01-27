@@ -144,6 +144,10 @@ namespace Server
                     info.lookX = 0;
                     info.lookY = 0;
                     info.lookZ = 0;
+
+                    info.C1x = 0;
+                    info.C1y = 0;
+                    info.C1z = 0;
                    
                     message.PlayerInfo = info;
 

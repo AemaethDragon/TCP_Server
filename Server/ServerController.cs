@@ -144,6 +144,7 @@ namespace Server
                     info.lookX = 0;
                     info.lookY = 0;
                     info.lookZ = 0;
+                   
                     message.PlayerInfo = info;
 
                     p.SendMessage(message);

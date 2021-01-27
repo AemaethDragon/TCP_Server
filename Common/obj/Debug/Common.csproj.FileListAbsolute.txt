@@ -41,3 +41,12 @@ C:\Users\helde\Documents\GitKraken\TCP_Server\Common\obj\Debug\Common.csproj.Cor
 C:\Users\helde\Documents\GitKraken\TCP_Server\Common\obj\Debug\Common.csproj.CopyComplete
 C:\Users\helde\Documents\GitKraken\TCP_Server\Common\obj\Debug\Common.dll
 C:\Users\helde\Documents\GitKraken\TCP_Server\Common\obj\Debug\Common.pdb
+C:\Users\filip\Desktop\3ºano\PAI\TrabalhoPraticoRedes\TCP_Server\Common\bin\Debug\Common.dll
+C:\Users\filip\Desktop\3ºano\PAI\TrabalhoPraticoRedes\TCP_Server\Common\bin\Debug\Common.pdb
+C:\Users\filip\Desktop\3ºano\PAI\TrabalhoPraticoRedes\TCP_Server\Common\bin\Debug\Newtonsoft.Json.dll
+C:\Users\filip\Desktop\3ºano\PAI\TrabalhoPraticoRedes\TCP_Server\Common\bin\Debug\Newtonsoft.Json.xml
+C:\Users\filip\Desktop\3ºano\PAI\TrabalhoPraticoRedes\TCP_Server\Common\obj\Debug\Common.csprojAssemblyReference.cache
+C:\Users\filip\Desktop\3ºano\PAI\TrabalhoPraticoRedes\TCP_Server\Common\obj\Debug\Common.csproj.CoreCompileInputs.cache
+C:\Users\filip\Desktop\3ºano\PAI\TrabalhoPraticoRedes\TCP_Server\Common\obj\Debug\Common.csproj.CopyComplete
+C:\Users\filip\Desktop\3ºano\PAI\TrabalhoPraticoRedes\TCP_Server\Common\obj\Debug\Common.dll
+C:\Users\filip\Desktop\3ºano\PAI\TrabalhoPraticoRedes\TCP_Server\Common\obj\Debug\Common.pdb

@@ -58,6 +58,7 @@ namespace Common
         PlayerName,
         NewPlayer,
         PlayerMovement,
+        PlayerDisc,
         FinishedSync
     }
 }

@@ -32,7 +32,7 @@ namespace Server
                     tcpListener.BeginAcceptTcpClient(AcceptPlayer, tcpListener);
                 }
 
-                foreach (var player in players)
+                foreach (var player in players.ToArray())
                 {
                     switch (player.GameState)
                     {
@@ -66,6 +66,14 @@ namespace Server
                         {
                             p.SendMessage(message);
                         }
+                    }
+                }
+                else if (message.MessageType == MessageType.PlayerDisc)
+                {
+                    players.Remove(player);
+                    foreach (var p in players)
+                    {
+                        p.SendMessage(message);
                     }
                 }
             }

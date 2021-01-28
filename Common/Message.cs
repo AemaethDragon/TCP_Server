@@ -23,14 +23,7 @@ namespace Common
         public float C1x { get; set; }
         public float C1y { get; set; }
         public float C1z { get; set; }
-
-        public float C2x { get; set; }
-        public float C2y { get; set; }
-        public float C2z { get; set; }
-
-        public float C3x { get; set; }
-        public float C3y { get; set; }
-        public float C3z { get; set; }
+        
         #endregion
         #region portalPositions
         public float P1x { get; set; }
